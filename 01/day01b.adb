@@ -9,7 +9,7 @@ procedure Day01b is
   Tot         : Natural := 0;
 
   procedure Written_Digit_Index(L     : String;
-                                Dir : Direction;
+                                Dir   : Direction;
                                 Index : out Natural ;
                                 Value : out Natural)  is
     type Info_Record is record
@@ -20,39 +20,113 @@ procedure Day01b is
     Index_Array : array(1..9) of Info_Record := (others => ( 0,0));
     Least_Index : Natural := Natural'Last;
     Largest_Index : Natural := Natural'First;
+    Tmp_Idx : Natural := 1;
   begin
     for I in Index_Array'Range loop
+      Tmp_Idx := 0;
       Index_Array(I).Val := I;
+
       case I is
-        when 1 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "one", Going => Forward);
-        when 2 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "two", Going => Forward);
-        when 3 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "three", Going => Forward);
-        when 4 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "four", Going => Forward);
-        when 5 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "five", Going => Forward);
-        when 6 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "six", Going => Forward);
-        when 7 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "seven", Going => Forward);
-        when 8 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "eight", Going => Forward);
-        when 9 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "nine", Going => Forward);
+        when 1 =>
+          loop
+            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1 .. L'Last), "one", Going => Forward);
+            if Dir = Forward then
+              Index_Array(I).Idx := Tmp_Idx;
+              exit;
+            end if;
+            exit when Tmp_Idx = 0;
+            Index_Array(I).Idx := Tmp_Idx;
+          end loop;
+        when 2 =>
+          loop
+            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "two", Going => Forward);
+            if Dir = Forward then
+              Index_Array(I).Idx := Tmp_Idx;
+              exit;
+            end if;
+            exit when Tmp_Idx = 0;
+            Index_Array(I).Idx := Tmp_Idx;
+          end loop;
+        when 3 =>
+          loop
+            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "three", Going => Forward);
+            if Dir = Forward then
+              Index_Array(I).Idx := Tmp_Idx;
+              exit;
+            end if;
+            exit when Tmp_Idx = 0;
+            Index_Array(I).Idx := Tmp_Idx;
+          end loop;
+        when 4 =>
+          loop
+            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "four", Going => Forward);
+            if Dir = Forward then
+              Index_Array(I).Idx := Tmp_Idx;
+              exit;
+            end if;
+            exit when Tmp_Idx = 0;
+            Index_Array(I).Idx := Tmp_Idx;
+          end loop;
+        when 5 =>
+          loop
+            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "five", Going => Forward);
+            if Dir = Forward then
+              Index_Array(I).Idx := Tmp_Idx;
+              exit;
+            end if;
+            exit when Tmp_Idx = 0;
+            Index_Array(I).Idx := Tmp_Idx;
+          end loop;
+        when 6 =>
+          loop
+            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "six", Going => Forward);
+            if Dir = Forward then
+              Index_Array(I).Idx := Tmp_Idx;
+              exit;
+            end if;
+            exit when Tmp_Idx = 0;
+            Index_Array(I).Idx := Tmp_Idx;
+          end loop;
+        when 7 =>
+          loop
+            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "seven", Going => Forward);
+            if Dir = Forward then
+              Index_Array(I).Idx := Tmp_Idx;
+              exit;
+            end if;
+            exit when Tmp_Idx = 0;
+            Index_Array(I).Idx := Tmp_Idx;
+          end loop;
+        when 8 =>
+          loop
+            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "eight", Going => Forward);
+            if Dir = Forward then
+              Index_Array(I).Idx := Tmp_Idx;
+              exit;
+            end if;
+            exit when Tmp_Idx = 0;
+            Index_Array(I).Idx := Tmp_Idx;
+          end loop;
+        when 9 =>
+          loop
+            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "nine", Going => Forward);
+            if Dir = Forward then
+              Index_Array(I).Idx := Tmp_Idx;
+              exit;
+            end if;
+            exit when Tmp_Idx = 0;
+            Index_Array(I).Idx := Tmp_Idx;
+          end loop;
       end case;
-      --  if Dir = Backward
-      --    and then Index_Array(I).Idx > 0
-      --  then
-      --    Index_Array(I).Idx := L'Last - Index_Array(I).Idx +1;
-      --  end if;
---      Text_Io.Put_Line (L);
-      Text_Io.Put_Line (Index_Array(I)'image);
     end loop;
 
     case Dir is
       when Forward =>
         for I in Index_Array'Range loop
-          Text_Io.Put_Line (I'Img & Index_Array(I).Idx'Img & Least_Index'img);
-          Text_Io.Put_Line (Boolean'Image(Index_Array(I).Idx < Least_Index and then Index_Array(I).Idx > 0));
           if Index_Array(I).Idx < Least_Index
             and then Index_Array(I).Idx > 0
           then
             Least_Index := Index_Array(I).Idx;
-            Text_Io.Put_Line ("Least_Index " & Least_Index'img);
           end if;
         end loop;
 
@@ -78,7 +152,6 @@ procedure Day01b is
             Largest_Index := Index_Array(I).Idx;
           end if;
         end loop;
-        Text_Io.Put_Line ("Largest_Index " & Largest_Index'img);
 
         if Largest_Index >  0
         then
@@ -93,10 +166,6 @@ procedure Day01b is
           Value := 0;
         end if;
     end case;
-
---    Text_Io.Put_Line (Dir'Image & Least_Index'img);
---    Text_Io.Put_Line (Index_Array(Least_Index)'image);
-
 
   end Written_Digit_Index;
   -----------------------------------------------
@@ -127,13 +196,15 @@ begin
         end case;
       end loop;
 
-      Text_Io.Put_Line("first numeral forward digit '" & Num(1) & "' at idx " & Idx_Number_Array(1)'img);
+      Text_Io.Put_Line("first numeral forward digit '" & Num(1) & "' at idx " & Idx_Number_Array(1)'Img);
 
       Written_Digit_Index(Line, Forward, Idx_Char_Array(1), Value);
 
-      Text_Io.Put_Line("first alfa forward digit '" & Value'img & "' at idx " & Idx_Char_Array(1)'img);
+      Text_Io.Put_Line("first alfa forward digit '" & Value'Img & "' at idx " & Idx_Char_Array(1)'Img);
 
-      if Idx_Char_Array(1) < Idx_Number_Array(1) then
+      if Idx_Char_Array(1) < Idx_Number_Array(1)
+        and then Idx_Char_Array(1) > 0
+      then
         Num(1) := Value'Img(2);
       end if;
 
@@ -146,12 +217,14 @@ begin
             when others => null;
         end case;
       end loop;
-      Text_Io.Put_Line("second numeral backward digit '" & Num(2) & "' at idx " & Idx_Number_Array(2)'img);
+      Text_Io.Put_Line("second numeral backward digit '" & Num(2) & "' at idx " & Idx_Number_Array(2)'Img);
 
       Written_Digit_Index(Line, Backward, Idx_Char_Array(2), Value);
-      Text_Io.Put_Line("second alfa backward digit '" & Value'img & "' at idx " & Idx_Char_Array(2)'img);
+      Text_Io.Put_Line("second alfa backward digit '" & Value'Img & "' at idx " & Idx_Char_Array(2)'Img);
 
-      if Idx_Char_Array(2) > Idx_Number_Array(2) then
+      if Idx_Char_Array(2) > Idx_Number_Array(2)
+        and then Idx_Char_Array(2) > 0
+      then
         Num(2) := Value'Img(2);
       end if;
 
@@ -160,7 +233,7 @@ begin
 
       Tot := Tot + Natural'Value(Num);
     end;
-   -- exit when Cnt > 10;
+    -- exit when Cnt > 10;
   end loop;
   Text_Io.Put_Line ("tot=" & Tot'Img);
 end Day01b;
