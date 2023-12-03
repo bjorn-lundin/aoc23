@@ -11,7 +11,7 @@ package body Filehandling is
   begin
     Text_Io.Open(File =>  F,
                  Mode =>  Text_Io.In_File,
-                 Name =>  Filename  );
+                 Name =>  "/usr2/wcs/git/aoc23/input/" & Filename  );
     loop
       Text_Io.Get_Line(F,Buffer,Len);
       List.Append(To_Unbounded_String(Buffer(1..Len)));
