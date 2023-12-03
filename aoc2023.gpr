@@ -1,11 +1,12 @@
 project aoc2023 is
-    for Source_Dirs use ("./","01");
+    for Source_Dirs use ("./","01","02");
     for Object_Dir use "./obj";
     for Exec_Dir use "./exe";
    
     for Main use 
     ("day01a.adb",
-     "day01b.adb");
+     "day01b.adb",
+     "day02a.adb");
     
 
    package Compiler is
