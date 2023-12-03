@@ -17,128 +17,43 @@ procedure Day01b is
       Val : Natural := 0;
     end record;
 
-    Index_Array : array(1..9) of Info_Record := (others => ( 0,0));
-    Least_Index : Natural := Natural'Last;
-    Largest_Index : Natural := Natural'First;
-    Tmp_Idx : Natural := 1;
+    Index_Array           : array(1..9) of Info_Record := (others => ( 0,0));
+    Least_Index_In_Line   : Natural := Natural'Last;
+    Largest_Index_In_Line : Natural := Natural'First;
+    Best_Index            : Natural := 0;
   begin
     for I in Index_Array'Range loop
-      Tmp_Idx := 0;
       Index_Array(I).Val := I;
 
       case I is
-        when 1 =>
-          loop
-            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1 .. L'Last), "one", Going => Forward);
-            if Dir = Forward then
-              Index_Array(I).Idx := Tmp_Idx;
-              exit;
-            end if;
-            exit when Tmp_Idx = 0;
-            Index_Array(I).Idx := Tmp_Idx;
-          end loop;
-        when 2 =>
-          loop
-            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "two", Going => Forward);
-            if Dir = Forward then
-              Index_Array(I).Idx := Tmp_Idx;
-              exit;
-            end if;
-            exit when Tmp_Idx = 0;
-            Index_Array(I).Idx := Tmp_Idx;
-          end loop;
-        when 3 =>
-          loop
-            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "three", Going => Forward);
-            if Dir = Forward then
-              Index_Array(I).Idx := Tmp_Idx;
-              exit;
-            end if;
-            exit when Tmp_Idx = 0;
-            Index_Array(I).Idx := Tmp_Idx;
-          end loop;
-        when 4 =>
-          loop
-            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "four", Going => Forward);
-            if Dir = Forward then
-              Index_Array(I).Idx := Tmp_Idx;
-              exit;
-            end if;
-            exit when Tmp_Idx = 0;
-            Index_Array(I).Idx := Tmp_Idx;
-          end loop;
-        when 5 =>
-          loop
-            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "five", Going => Forward);
-            if Dir = Forward then
-              Index_Array(I).Idx := Tmp_Idx;
-              exit;
-            end if;
-            exit when Tmp_Idx = 0;
-            Index_Array(I).Idx := Tmp_Idx;
-          end loop;
-        when 6 =>
-          loop
-            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "six", Going => Forward);
-            if Dir = Forward then
-              Index_Array(I).Idx := Tmp_Idx;
-              exit;
-            end if;
-            exit when Tmp_Idx = 0;
-            Index_Array(I).Idx := Tmp_Idx;
-          end loop;
-        when 7 =>
-          loop
-            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "seven", Going => Forward);
-            if Dir = Forward then
-              Index_Array(I).Idx := Tmp_Idx;
-              exit;
-            end if;
-            exit when Tmp_Idx = 0;
-            Index_Array(I).Idx := Tmp_Idx;
-          end loop;
-        when 8 =>
-          loop
-            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "eight", Going => Forward);
-            if Dir = Forward then
-              Index_Array(I).Idx := Tmp_Idx;
-              exit;
-            end if;
-            exit when Tmp_Idx = 0;
-            Index_Array(I).Idx := Tmp_Idx;
-          end loop;
-        when 9 =>
-          loop
-            Tmp_Idx := Ada.Strings.Fixed.Index (L(Tmp_Idx +1.. L'Last), "nine", Going => Forward);
-            if Dir = Forward then
-              Index_Array(I).Idx := Tmp_Idx;
-              exit;
-            end if;
-            exit when Tmp_Idx = 0;
-            Index_Array(I).Idx := Tmp_Idx;
-          end loop;
+        when 1 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "one",  Going => Dir);
+        when 2 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "two",  Going => Dir);
+        when 3 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "three", Going => Dir);
+        when 4 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "four", Going => Dir);
+        when 5 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "five", Going => Dir);
+        when 6 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "six", Going => Dir);
+        when 7 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "seven", Going => Dir);
+        when 8 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "eight", Going => Dir);
+        when 9 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "nine", Going => Dir);
       end case;
     end loop;
 
     case Dir is
       when Forward =>
         for I in Index_Array'Range loop
-          if Index_Array(I).Idx < Least_Index
+          if Index_Array(I).Idx < Least_Index_In_Line
             and then Index_Array(I).Idx > 0
           then
-            Least_Index := Index_Array(I).Idx;
+            Least_Index_In_Line := Index_Array(I).Idx;
+            Best_Index := I;
           end if;
         end loop;
 
-        if Least_Index < Natural'Last
-          and then Least_Index > 0
+        if Least_Index_In_Line < Natural'Last
+          and then Least_Index_In_Line > 0
         then
-          for I in Index_Array'Range loop
-            if Index_Array(I).Idx = Least_Index then
-              Index := Index_Array(I).Idx;
-              Value := Index_Array(I).Val;
-            end if;
-          end loop;
+          Index := Index_Array(Best_Index).Idx;
+          Value := Index_Array(Best_Index).Val;
         else
           Index := 0;
           Value := 0;
@@ -146,21 +61,18 @@ procedure Day01b is
 
       when Backward =>
         for I in Index_Array'Range loop
-          if Index_Array(I).Idx > Largest_Index
+          if Index_Array(I).Idx > Largest_Index_In_Line
             and then Index_Array(I).Idx > 0
           then
-            Largest_Index := Index_Array(I).Idx;
+            Largest_Index_In_Line := Index_Array(I).Idx;
+            Best_Index := I;
           end if;
         end loop;
 
-        if Largest_Index >  0
+        if Largest_Index_In_Line >  0
         then
-          for I in Index_Array'Range loop
-            if Index_Array(I).Idx = Largest_Index then
-              Index := Index_Array(I).Idx;
-              Value := Index_Array(I).Val;
-            end if;
-          end loop;
+          Index := Index_Array(Best_Index).Idx;
+          Value := Index_Array(Best_Index).Val;
         else
           Index := 0;
           Value := 0;
@@ -227,13 +139,9 @@ begin
       then
         Num(2) := Value'Img(2);
       end if;
-
-
       Text_Io.Put_Line (Num);
-
       Tot := Tot + Natural'Value(Num);
     end;
-    -- exit when Cnt > 10;
   end loop;
   Text_Io.Put_Line ("tot=" & Tot'Img);
 end Day01b;
