@@ -1,147 +1,259 @@
-with Filehandling;
+with Ada.Strings;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Text_Io;
-with Ada.Strings ; use Ada.Strings ;
 with Ada.Strings.Fixed;
+with Ada.Containers.Doubly_Linked_Lists;
+with Text_Io;
+with Gnat; use Gnat;
+with Gnat.String_Split;
 
-procedure Day01b is
-  List        : Filehandling.Content.List;
-  Tot         : Natural := 0;
 
-  procedure Written_Digit_Index(L     : String;
-                                Dir   : Direction;
-                                Index : out Natural ;
-                                Value : out Natural)  is
-    type Info_Record is record
-      Idx : Natural := 0;
-      Val : Natural := 0;
-    end record;
+with Filehandling;
 
-    Index_Array           : array(1..9) of Info_Record := (others => ( 0,0));
-    Least_Index_In_Line   : Natural := Natural'Last;
-    Largest_Index_In_Line : Natural := Natural'First;
-    Best_Index            : Natural := 0;
+procedure Day02b is
+  List : Filehandling.Content.List;
+  Tot  : Natural := 0;
+
+  type Color_Type is (Red, Green, Blue);
+
+  subtype Gameid_Type is Positive range 1 ..100;
+
+  type Color_Array is array (Color_Type'Range) of Natural ;
+  type Sample_Record is record
+    Num   : Color_Array := (others => 0);
+  end record;
+
+  package Samples is new Ada.Containers.Doubly_Linked_Lists(Sample_Record);
+
+  type Game_Record is record
+    Gameid      : Gameid_Type;
+    Sample_List : Samples.List;
+  end record;
+
+  package Games is new Ada.Containers.Doubly_Linked_Lists(Game_Record);
+  Game_List : Games.List;
+
+
+  function Parse(Line : String) return Game_Record is
+    G : Game_Record;
   begin
-    for I in Index_Array'Range loop
-      Index_Array(I).Val := I;
-
-      case I is
-        when 1 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "one",  Going => Dir);
-        when 2 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "two",  Going => Dir);
-        when 3 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "three", Going => Dir);
-        when 4 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "four", Going => Dir);
-        when 5 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "five", Going => Dir);
-        when 6 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "six", Going => Dir);
-        when 7 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "seven", Going => Dir);
-        when 8 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "eight", Going => Dir);
-        when 9 => Index_Array(I).Idx := Ada.Strings.Fixed.Index (L, "nine", Going => Dir);
-      end case;
-    end loop;
-
-    case Dir is
-      when Forward =>
-        for I in Index_Array'Range loop
-          if Index_Array(I).Idx < Least_Index_In_Line
-            and then Index_Array(I).Idx > 0
-          then
-            Least_Index_In_Line := Index_Array(I).Idx;
-            Best_Index := I;
-          end if;
-        end loop;
-
-        if Least_Index_In_Line < Natural'Last
-          and then Least_Index_In_Line > 0
-        then
-          Index := Index_Array(Best_Index).Idx;
-          Value := Index_Array(Best_Index).Val;
-        else
-          Index := 0;
-          Value := 0;
-        end if;
-
-      when Backward =>
-        for I in Index_Array'Range loop
-          if Index_Array(I).Idx > Largest_Index_In_Line
-            and then Index_Array(I).Idx > 0
-          then
-            Largest_Index_In_Line := Index_Array(I).Idx;
-            Best_Index := I;
-          end if;
-        end loop;
-
-        if Largest_Index_In_Line >  0
-        then
-          Index := Index_Array(Best_Index).Idx;
-          Value := Index_Array(Best_Index).Val;
-        else
-          Index := 0;
-          Value := 0;
-        end if;
-    end case;
-
-  end Written_Digit_Index;
-  -----------------------------------------------
-
-  Cnt         : Natural := 0;
-begin
-  Filehandling.Read("input_01a.dat", List);
-  for Unbounded_Line of List loop
-    Cnt := Cnt +1;
     declare
-      Idx_Char_Array   : array(1..2) of Natural := (others => 0);
-      Idx_Number_Array : array(1..2) of Natural := (others => 0);
-      Num              : String(1..2);
-      Line             : String := To_String(Unbounded_Line);
-      Value            : Natural := 0;
+      use Gnat;
+      Subs : Gnat.String_Split.Slice_Set;
+      Seps : constant String := ":";
     begin
-      Text_Io.Put_Line("-----------------------------------------");
-      Text_Io.Put_Line(Line);
+      Text_Io.Put_Line( "Line '" & Line & "'");
+      --check for multi-fields
+      String_Split.Create (S          => Subs,
+                           From       => Line,
+                           Separators => Seps,
+                           Mode       => String_Split.Multiple);
+      for J in 1 .. String_Split.Slice_Count(Subs) loop
+        declare
+          Value : String := String_Split.Slice(Subs, J);
+          Id    : Unbounded_String;
+        begin
+          case J is
+            when 1 => -- the id
+              for C of Value loop
+                case C is
+                  when '0' .. '9' => Append(Id,C);
+                  when others => null;
+                end case;
+              end loop;
+              G.Gameid := Gameid_Type'Value(To_String(Id));
 
-      for I in Line'Range loop
-        Num := (others => ' ');
-        case Line(I) is
-          when '0' .. '9' =>
-            Idx_Number_Array(1) := I;
-            Num(1) := Line(I);
-            exit;
-            when others => null;
-        end case;
+              -------------------
+
+            when 2 => -- the samples
+              --++--++--++--++--
+              declare
+                use Gnat;
+                Subs : Gnat.String_Split.Slice_Set;
+                Seps : constant String := ";";
+              begin
+               -- Text_Io.Put_Line( "games '" & Value & "'");
+                --check for multi-fields
+                String_Split.Create (S          => Subs,
+                                     From       => Value,
+                                     Separators => Seps,
+                                     Mode       => String_Split.Multiple);
+                for K in 1 .. String_Split.Slice_Count(Subs) loop
+                  Text_Io.Put_Line(K'Img & " ---------start---------- ");
+                  declare
+                    Turns  : String := String_Split.Slice(Subs, K);
+                    Idxs   : array (Color_Type'Range) of Natural := (others => 0);
+                    Start  : Natural := 0;
+
+                    First_Comma  : Natural := 0;
+                    Second_Comma : Natural := 0;
+                    Sample       : Sample_Record;
+
+                  begin
+                    Text_Io.Put_Line(K'Img & " '" & Turns & "'");
+                    Idxs(Red) := Ada.Strings.Fixed.Index (Turns, "red");
+                    Idxs(Green) := Ada.Strings.Fixed.Index (Turns, "green");
+                    Idxs(Blue) := Ada.Strings.Fixed.Index (Turns, "blue");
+                    Text_Io.Put_Line(K'Img & " index-on-line R/G/B" & Idxs(Red)'Img & Idxs(Green)'Img & Idxs(Blue)'Img );
+
+
+                    First_Comma   := Ada.Strings.Fixed.Index (Turns, ",");
+                    if First_Comma = 0 then
+                      --one color only
+                      null;
+                    --  Text_Io.Put_Line(K'Img & "turns'first" & Turns'First'Img & " " & "turns'last" & Turns'Last'Img & " " & "first_comma" & First_Comma'Img );
+                    else
+                      Second_Comma  := Ada.Strings.Fixed.Index (Turns(First_Comma+1 .. Turns'Last), ",");
+                    end if;
+                    Text_Io.Put_Line(K'Img &  "first_comma" & First_Comma'Img & " second_comma" & Second_Comma'Img );
+
+                    if First_Comma = 0
+                      and then Second_Comma = 0
+                    then
+                      -- one color only
+                      Text_Io.Put_Line(K'Img & "parse1 '" & Turns & "'" );
+                      for Col in Color_Type'Range loop
+                        if Idxs(Col) > 0 then
+                          Text_Io.Put_Line(K'Img & "r11 " & Col'Img &  " '" & Turns(Turns'First.. Idxs(col)-1) & "'" );
+                          Sample.Num(Col) := Natural'Value(Turns(Turns'First.. Idxs(col)-1));
+                        end if;
+                      end loop;
+
+
+                    elsif First_Comma > 0
+                      and then Second_Comma = 0
+                    then
+                      -- two colors
+
+                      Text_Io.Put_Line(K'Img & "parse2 '" & Turns(Turns'First .. First_Comma -1) & "'" );
+                      Text_Io.Put_Line(K'Img & "parse2 '" & Turns(First_Comma+1 .. Turns'Last) & "'" );
+
+                      for Col in Color_Type'Range loop
+                        if Idxs(Col) > 0
+                          and then Idxs(Col) < First_Comma
+                        then
+                          Text_Io.Put_Line(K'Img & "r21 " & Col'Img &  " '" & Turns(Turns'First.. Idxs(col)-1) & "'" );
+                          Sample.Num(Col) := Natural'Value(Turns(Turns'First.. Idxs(col)-1));
+                        end if;
+                      end loop;
+
+                      --second
+
+                      for Col in Color_Type'Range loop
+                        if Idxs(Col) > 0
+                          and then Idxs(Col) > First_Comma
+                         -- and then Idxs(Col) < Second_Comma
+                        then
+                          Text_Io.Put_Line(K'Img & "r22 " & Col'Img &  " '" & Turns(First_Comma+1.. Idxs(col)-1) & "'" );
+                          Sample.Num(Col) := Natural'Value(Turns(First_Comma+1 .. Idxs(col)-1));
+                        end if;
+                      end loop;
+
+
+                    elsif First_Comma >0
+                      and then Second_Comma >0 then
+                      -- three colors
+                      Text_Io.Put_Line(K'Img & "parse3 '" & Turns(Turns'First .. First_Comma -1) & "'" );
+                      Text_Io.Put_Line(K'Img & "parse3 '" & Turns(First_Comma+1 .. Second_Comma -1) & "'" );
+                      Text_Io.Put_Line(K'Img & "parse3 '" & Turns(Second_Comma+1 .. Turns'Last) & "'" );
+
+                      for Col in Color_Type'Range loop
+                        if Idxs(Col) > 0
+                          and then Idxs(Col) < First_Comma
+                        then
+                          Text_Io.Put_Line(K'Img & "r31 " & Col'Img & " '" & Turns(Turns'First.. Idxs(col)-1) & "'");
+                          Sample.Num(Col) := Natural'Value(Turns(Turns'First.. Idxs(col)-1));
+                          Text_Io.Put_Line(K'Img & "r31 stop " & Col'Img);
+                        end if;
+                      end loop;
+
+                      for Col in Color_Type'Range loop
+                        if Idxs(Col) > 0
+                          and then Idxs(Col) > First_Comma
+                          and then Idxs(Col) < Second_Comma
+                        then
+                          Text_Io.Put_Line(K'Img & "r32 " & Col'Img & " '" & Turns(First_Comma+1.. Idxs(col)-1) & "'");
+                          Sample.Num(Col) := Natural'Value(Turns(First_Comma+1 .. Idxs(col)-1));
+                          Text_Io.Put_Line(K'Img & "r32 stop " & Col'Img);
+                        end if;
+                      end loop;
+
+                      for Col in Color_Type'Range loop
+                        if Idxs(Col) > 0
+                          and then Idxs(Col) > Second_Comma
+                        then
+                          Text_Io.Put_Line(K'Img & "r33 " & Col'Img & " '" & Turns(Second_Comma+1.. Idxs(col)-1) & "'");
+                          Sample.Num(Col) := Natural'Value(Turns(Second_Comma+1 .. Idxs(col)-1));
+                          Text_Io.Put_Line(K'Img & "r33 stop " & Col'Img);
+                        end if;
+                      end loop;
+
+                    --
+                    else
+                      raise Constraint_Error with "first comma" & First_Comma'Img & " second comma" & Second_Comma'Img;
+                    end if;
+                    G.Sample_List.Append(Sample);
+                    --  Text_Io.Put_Line(Sample'Image);
+                    --  Text_Io.Put_Line(G'Image);
+
+                  end;
+                  Text_Io.Put_Line(K'Img & " ---------stop---------- ");
+
+                end loop;
+              end;
+
+              --++--++--++--++--
+            when others =>
+              raise Constraint_Error with "J=" & J'Img;
+          end case;
+
+
+        end;
       end loop;
+    end;
 
-      Text_Io.Put_Line("first numeral forward digit '" & Num(1) & "' at idx " & Idx_Number_Array(1)'Img);
+    return G;
 
-      Written_Digit_Index(Line, Forward, Idx_Char_Array(1), Value);
+  end Parse;
 
-      Text_Io.Put_Line("first alfa forward digit '" & Value'Img & "' at idx " & Idx_Char_Array(1)'Img);
+  -----------------------------------------------------------
+  Game_Power : Natural := 0;
+  Total_Power : Natural := 0;
+  Least_Num  : Color_Array := (others => 0);
 
-      if Idx_Char_Array(1) < Idx_Number_Array(1)
-        and then Idx_Char_Array(1) > 0
-      then
-        Num(1) := Value'Img(2);
-      end if;
 
-      for I in reverse Line'Range loop
-        case Line(I) is
-          when '0' .. '9' =>
-            Idx_Number_Array(2) := I;
-            Num(2) := Line(I);
-            exit;
-            when others => null;
-        end case;
-      end loop;
-      Text_Io.Put_Line("second numeral backward digit '" & Num(2) & "' at idx " & Idx_Number_Array(2)'Img);
-
-      Written_Digit_Index(Line, Backward, Idx_Char_Array(2), Value);
-      Text_Io.Put_Line("second alfa backward digit '" & Value'Img & "' at idx " & Idx_Char_Array(2)'Img);
-
-      if Idx_Char_Array(2) > Idx_Number_Array(2)
-        and then Idx_Char_Array(2) > 0
-      then
-        Num(2) := Value'Img(2);
-      end if;
-      Text_Io.Put_Line (Num);
-      Tot := Tot + Natural'Value(Num);
+  Game : Game_Record;
+--  Ok : Boolean := True;
+--  Sum : Natural := 0;
+begin
+  Filehandling.Read("input_02a.dat", List);
+  for Unbounded_Line of List loop
+    declare
+      Line : String := To_String(Unbounded_Line);
+    begin
+      Game := Parse(Line);
+      Game_List.Append(Game);
+      --     Tot := Tot + Natural'Value(Num);
     end;
   end loop;
-  Text_Io.Put_Line ("tot=" & Tot'Img);
-end Day01b;
+
+
+  for G of Game_List loop
+    Least_Num  := (others => 1);
+    for S of G.Sample_List loop
+
+      for Col in Color_Type'range loop
+        if S.Num(Col) > Least_Num(Col) then
+          Least_Num(Col) := S.Num(Col);
+        end if;
+      end loop;
+
+    end loop;
+
+    Game_Power := Least_Num(Red) * Least_Num(Green) * Least_Num(Blue);
+    Total_Power := Total_Power + Game_Power;
+    Text_Io.Put_Line("game " & G.Gameid'Img & " Game_Power " & Game_Power'Img);
+
+  end loop;
+  Text_Io.Put_Line("Total_Power" & Total_Power'Img);
+
+end Day02b;

@@ -1,16 +1,21 @@
-project aoc2023 is
-    for Source_Dirs use ("./","01","02");
-    for Object_Dir use "./obj";
-    for Exec_Dir use "./exe";
+project Aoc2023 is
+  for Create_Missing_Dirs use "True";
+  for Source_Dirs use ("./","01","02","03");
+  for Object_Dir use "./obj";
+  for Exec_Dir use "./exe";
    
-    for Main use 
-    ("day01a.adb",
-     "day01b.adb",
-     "day02a.adb");
+  for Main use  (
+                 "day01a.adb",
+                 "day01b.adb",
+                 "day02a.adb",
+                 "day02b.adb",
+                 "day03a.adb",
+                 "day03b.adb"
+                );
     
 
-   package Compiler is
-     for Default_Switches ("Ada") use ("-gnat2020");
-   end Compiler;
+  package Compiler is
+    for Default_Switches ("Ada") use ("-gnat2020");
+  end Compiler;
      
-end aoc2023;
+end Aoc2023;

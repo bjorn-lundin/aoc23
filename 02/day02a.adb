@@ -234,7 +234,7 @@ begin
 
 
 
-  Text_Io.Put_Line("Game_List " & Game_List'Image);
+  --Text_Io.Put_Line("Game_List " & Game_List'Img);
 
   for G of Game_List loop
     for S of G.Sample_List loop
